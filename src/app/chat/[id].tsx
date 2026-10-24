@@ -3,7 +3,6 @@ import {
   View,
   Text,
   FlatList,
-  KeyboardAvoidingView,
   StyleSheet,
 } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
@@ -16,14 +15,14 @@ export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const conversation = conversations.find((c) => c.id === id);
   const [messages, setMessages] = useState<Message[]>(
-    messagesByConversation[id] ?? []
+    messagesByConversation[id] ?? [],
   );
   const listRef = useRef<FlatList<Message>>(null);
 
   const handleSend = (text: string) => {
     const now = new Date();
     const time = `${String(now.getHours()).padStart(2, "0")}:${String(
-      now.getMinutes()
+      now.getMinutes(),
     ).padStart(2, "0")}`;
 
     setMessages((prev) => [
@@ -41,7 +40,7 @@ export default function ChatScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior="padding">
+    <View style={styles.container}>
       <Stack.Screen options={{ title: conversation.name }} />
       <FlatList
         ref={listRef}
@@ -54,7 +53,7 @@ export default function ChatScreen() {
         }
       />
       <ComposeBar onSend={handleSend} />
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 

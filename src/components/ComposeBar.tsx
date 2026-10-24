@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, TextInput, Pressable, Text, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useKeyboardHeight } from "../components/hooks/useKeyboardHeight";
 
 type Props = {
   onSend: (text: string) => void;
@@ -9,6 +10,7 @@ type Props = {
 export default function ComposeBar({ onSend }: Props) {
   const [text, setText] = useState("");
   const insets = useSafeAreaInsets();
+  const keyboardHeight = useKeyboardHeight();
   const canSend = text.trim().length > 0;
 
   const handleSend = () => {
@@ -18,7 +20,12 @@ export default function ComposeBar({ onSend }: Props) {
   };
 
   return (
-    <View style={[styles.bar, { paddingBottom: 8 + insets.bottom }]}>
+    <View
+      style={[
+        styles.bar,
+        { paddingBottom: 8 + keyboardHeight + insets.bottom },
+      ]}
+    >
       <TextInput
         style={styles.input}
         value={text}
