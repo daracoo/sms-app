@@ -1,13 +1,24 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Conversation } from "../data/conversations";
+import { useRouter } from "expo-router";
 
 type Props = {
   conversation: Conversation;
 };
 
 export default function ConversationItem({ conversation }: Props) {
+  const router = useRouter();
+
   return (
-    <Pressable style={styles.row}>
+    <Pressable
+      style={styles.row}
+      onPress={() =>
+        router.push({
+          pathname: "/chat/[id]",
+          params: { id: conversation.id },
+        })
+      }
+    >
       <View style={styles.avatar}>
         <Text style={styles.avatarText}>
           {conversation.name.charAt(0).toUpperCase()}
