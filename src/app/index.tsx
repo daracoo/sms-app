@@ -1,21 +1,22 @@
-import { View, Text, StyleSheet } from "react-native";
+import { FlatList, View, StyleSheet } from "react-native";
+import ConversationItem from "../components/ConversationItem";
+import { conversations } from "../data/conversations";
 
 export default function Index() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>SMS</Text>
-    </View>
+    <FlatList
+      data={conversations}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => <ConversationItem conversation={item} />}
+      ItemSeparatorComponent={() => <View style={styles.separator} />}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "600",
+  separator: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: "#ddd",
+    marginLeft: 76,
   },
 });
