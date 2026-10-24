@@ -1,35 +1,17 @@
-import { useRef, useState } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-} from "react-native";
+import { useRef } from "react";
+import { View, Text, FlatList, StyleSheet } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
 import MessageBubble from "../../components/MessageBubble";
 import ComposeBar from "../../components/ComposeBar";
-import { conversations } from "../../data/conversations";
-import { Message, messagesByConversation } from "../../data/message";
+import { Message } from "../../data/message";
+import { useChat } from "../../context/ChatContext";
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { conversations, messages, sendMessage } = useChat();
   const conversation = conversations.find((c) => c.id === id);
-  const [messages, setMessages] = useState<Message[]>(
-    messagesByConversation[id] ?? [],
-  );
+  const chatMessages = messages[id] ?? [];
   const listRef = useRef<FlatList<Message>>(null);
-
-  const handleSend = (text: string) => {
-    const now = new Date();
-    const time = `${String(now.getHours()).padStart(2, "0")}:${String(
-      now.getMinutes(),
-    ).padStart(2, "0")}`;
-
-    setMessages((prev) => [
-      ...prev,
-      { id: Date.now().toString(), text, sender: "me", time },
-    ]);
-  };
 
   if (!conversation) {
     return (
@@ -44,7 +26,7 @@ export default function ChatScreen() {
       <Stack.Screen options={{ title: conversation.name }} />
       <FlatList
         ref={listRef}
-        data={messages}
+        data={chatMessages}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <MessageBubble message={item} />}
         contentContainerStyle={styles.list}
@@ -52,7 +34,7 @@ export default function ChatScreen() {
           listRef.current?.scrollToEnd({ animated: true })
         }
       />
-      <ComposeBar onSend={handleSend} />
+      <ComposeBar onSend={(text) => sendMessage(conversation.id, text)} />
     </View>
   );
 }

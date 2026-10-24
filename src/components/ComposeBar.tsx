@@ -5,13 +5,14 @@ import { useKeyboardHeight } from "../components/hooks/useKeyboardHeight";
 
 type Props = {
   onSend: (text: string) => void;
+  disabled?: boolean;
 };
 
-export default function ComposeBar({ onSend }: Props) {
+export default function ComposeBar({ onSend, disabled = false }: Props) {
   const [text, setText] = useState("");
   const insets = useSafeAreaInsets();
   const keyboardHeight = useKeyboardHeight();
-  const canSend = text.trim().length > 0;
+  const canSend = !disabled && text.trim().length > 0;
 
   const handleSend = () => {
     if (!canSend) return;
