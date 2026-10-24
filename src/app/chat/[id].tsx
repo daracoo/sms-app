@@ -1,10 +1,13 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, FlatList, StyleSheet } from "react-native";
 import { Stack, useLocalSearchParams } from "expo-router";
+import MessageBubble from "../../components/MessageBubble";
 import { conversations } from "../../data/conversations";
+import { messagesByConversation } from "../../data/message";
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const conversation = conversations.find((c) => c.id === id);
+  const messages = messagesByConversation[id] ?? [];
 
   if (!conversation) {
     return (
@@ -15,23 +18,29 @@ export default function ChatScreen() {
   }
 
   return (
-    <View style={styles.center}>
+    <View style={styles.container}>
       <Stack.Screen options={{ title: conversation.name }} />
-      <Text style={styles.phone}>{conversation.phone}</Text>
-      <Text>Chat for conversation {conversation.id}</Text>
+      <FlatList
+        data={messages}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <MessageBubble message={item} />}
+        contentContainerStyle={styles.list}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+  },
   center: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
   },
-  phone: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 8,
+  list: {
+    padding: 12,
   },
 });
