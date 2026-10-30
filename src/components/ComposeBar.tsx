@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View, TextInput, Pressable, Text, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useKeyboardHeight } from "../components/hooks/useKeyboardHeight";
@@ -6,13 +6,26 @@ import { useKeyboardHeight } from "../components/hooks/useKeyboardHeight";
 type Props = {
   onSend: (text: string) => void;
   disabled?: boolean;
+  editingText?: string | null;
+  onCancelEdit?: () => void;
 };
 
-export default function ComposeBar({ onSend, disabled = false }: Props) {
+export default function ComposeBar({
+  onSend,
+  disabled = false,
+  editingText = null,
+  onCancelEdit,
+}: Props) {
   const [text, setText] = useState("");
   const insets = useSafeAreaInsets();
   const keyboardHeight = useKeyboardHeight();
+  const isEditing = editingText !== null;
   const canSend = !disabled && text.trim().length > 0;
+
+  // When edit mode starts, put the message text into the input
+  useEffect(() => {
+    if (editingText !== null) setText(editingText);
+  }, [editingText]);
 
   const handleSend = () => {
     if (!canSend) return;
@@ -20,40 +33,72 @@ export default function ComposeBar({ onSend, disabled = false }: Props) {
     setText("");
   };
 
+  const handleCancel = () => {
+    setText("");
+    onCancelEdit?.();
+  };
+
   return (
     <View
       style={[
-        styles.bar,
+        styles.container,
         { paddingBottom: 8 + keyboardHeight + insets.bottom },
       ]}
     >
-      <TextInput
-        style={styles.input}
-        value={text}
-        onChangeText={setText}
-        placeholder="Text message"
-        multiline
-      />
-      <Pressable
-        style={[styles.sendButton, !canSend && styles.sendDisabled]}
-        onPress={handleSend}
-        disabled={!canSend}
-      >
-        <Text style={styles.sendText}>Send</Text>
-      </Pressable>
+      {isEditing && (
+        <View style={styles.editBanner}>
+          <Text style={styles.editLabel}>Editing message</Text>
+          <Pressable onPress={handleCancel}>
+            <Text style={styles.cancel}>Cancel</Text>
+          </Pressable>
+        </View>
+      )}
+      <View style={styles.row}>
+        <TextInput
+          style={styles.input}
+          value={text}
+          onChangeText={setText}
+          placeholder="Text message"
+          multiline
+        />
+        <Pressable
+          style={[styles.sendButton, !canSend && styles.sendDisabled]}
+          onPress={handleSend}
+          disabled={!canSend}
+        >
+          <Text style={styles.sendText}>{isEditing ? "Save" : "Send"}</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  bar: {
-    flexDirection: "row",
-    alignItems: "flex-end",
+  container: {
     paddingHorizontal: 8,
     paddingTop: 8,
     backgroundColor: "white",
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "#ddd",
+  },
+  editBanner: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 8,
+    paddingBottom: 8,
+  },
+  editLabel: {
+    color: "#888",
+    fontSize: 14,
+  },
+  cancel: {
+    color: "#4F8EF7",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "flex-end",
   },
   input: {
     flex: 1,

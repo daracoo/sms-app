@@ -1,18 +1,22 @@
-import { View, Text, StyleSheet } from "react-native";
-import { Message } from "../data/message"
+import { Pressable, Text, StyleSheet } from "react-native";
+import { Message } from "../data/message";
 
 type Props = {
   message: Message;
+  onLongPress?: () => void;
 };
 
-export default function MessageBubble({ message }: Props) {
+export default function MessageBubble({ message, onLongPress }: Props) {
   const isMe = message.sender === "me";
 
   return (
-    <View style={[styles.bubble, isMe ? styles.mine : styles.theirs]}>
+    <Pressable
+      onLongPress={onLongPress}
+      style={[styles.bubble, isMe ? styles.mine : styles.theirs]}
+    >
       <Text style={[styles.text, isMe && styles.mineText]}>{message.text}</Text>
       <Text style={[styles.time, isMe && styles.mineTime]}>{message.time}</Text>
-    </View>
+    </Pressable>
   );
 }
 

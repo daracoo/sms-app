@@ -10,6 +10,9 @@ type ChatContextValue = {
   messages: Record<string, Message[]>;
   sendMessage: (conversationId: string, text: string) => void;
   startConversation: (phone: string, text: string) => string;
+  editMessage: (conversationId: string, messageId: string, text: string) => void;
+  deleteMessage: (conversationId: string, messageId: string) => void;
+  updateContact: (conversationId: string, name: string, phone: string) => void;
 };
 
 const ChatContext = createContext<ChatContextValue | null>(null);
@@ -20,6 +23,22 @@ const formatTime = (date: Date) =>
   ).padStart(2, "0")}`;
 
 const normalize = (phone: string) => phone.replace(/[\s-]/g, "");
+
+// Keeps the list preview in sync with the last message of a conversation
+const syncPreview = (
+  list: Conversation[],
+  conversationId: string,
+  msgs: Message[]
+) =>
+  list.map((c) => {
+    if (c.id !== conversationId) return c;
+    const last = msgs[msgs.length - 1];
+    return {
+      ...c,
+      lastMessage: last ? last.text : "",
+      time: last ? last.time : c.time,
+    };
+  });
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [conversations, setConversations] =
@@ -73,9 +92,49 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     return id;
   };
 
+  const editMessage = (
+    conversationId: string,
+    messageId: string,
+    text: string
+  ) => {
+    const updated = (messages[conversationId] ?? []).map((m) =>
+      m.id === messageId ? { ...m, text } : m
+    );
+    setMessages((prev) => ({ ...prev, [conversationId]: updated }));
+    setConversations((prev) => syncPreview(prev, conversationId, updated));
+  };
+
+  const deleteMessage = (conversationId: string, messageId: string) => {
+    const updated = (messages[conversationId] ?? []).filter(
+      (m) => m.id !== messageId
+    );
+    setMessages((prev) => ({ ...prev, [conversationId]: updated }));
+    setConversations((prev) => syncPreview(prev, conversationId, updated));
+  };
+
+  const updateContact = (conversationId: string, name: string, phone: string) => {
+    const cleanPhone = phone.trim();
+    const cleanName = name.trim() || cleanPhone;
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === conversationId
+          ? { ...c, name: cleanName, phone: cleanPhone }
+          : c
+      )
+    );
+  };
+
   return (
     <ChatContext.Provider
-      value={{ conversations, messages, sendMessage, startConversation }}
+      value={{
+        conversations,
+        messages,
+        sendMessage,
+        startConversation,
+        editMessage,
+        deleteMessage,
+        updateContact,
+      }}
     >
       {children}
     </ChatContext.Provider>

@@ -7,6 +7,7 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="index" options={{ title: "Messages" }} />
         <Stack.Screen name="new" options={{ title: "New message" }} />
+        <Stack.Screen name="edit-contact" options={{ title: "Edit contact" }} />
       </Stack>
     </ChatProvider>
   );
