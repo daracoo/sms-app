@@ -3,14 +3,15 @@ import { View, Text, TextInput, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import ComposeBar from "../components/ComposeBar";
 import { useChat } from "../context/ChatContext";
+import { Message } from "../data/message";
 
 export default function NewMessageScreen() {
   const router = useRouter();
   const { startConversation } = useChat();
   const [phone, setPhone] = useState("");
 
-  const handleSend = (text: string) => {
-    const id = startConversation(phone, text);
+  const handleSend = (text: string, sender: Message["sender"]) => {
+    const id = startConversation(phone, text, sender);
     router.replace({ pathname: "/chat/[id]", params: { id } });
   };
 

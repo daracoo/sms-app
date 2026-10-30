@@ -1,5 +1,12 @@
 import { useRef, useState } from "react";
-import { View, Text, FlatList, Pressable, Alert, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  Pressable,
+  Alert,
+  StyleSheet,
+} from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import MessageBubble from "../../components/MessageBubble";
 import ComposeBar from "../../components/ComposeBar";
@@ -39,12 +46,12 @@ export default function ChatScreen() {
     ]);
   };
 
-  const handleSend = (text: string) => {
+  const handleSend = (text: string, sender: Message["sender"]) => {
     if (editingId) {
       editMessage(conversation.id, editingId, text);
       setEditingId(null);
     } else {
-      sendMessage(conversation.id, text);
+      sendMessage(conversation.id, text, sender);
     }
   };
 

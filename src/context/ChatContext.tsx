@@ -8,9 +8,21 @@ import { Message, messagesByConversation } from "../data/message";
 type ChatContextValue = {
   conversations: Conversation[];
   messages: Record<string, Message[]>;
-  sendMessage: (conversationId: string, text: string) => void;
-  startConversation: (phone: string, text: string) => string;
-  editMessage: (conversationId: string, messageId: string, text: string) => void;
+  sendMessage: (
+    conversationId: string,
+    text: string,
+    sender?: Message["sender"],
+  ) => void;
+  startConversation: (
+    phone: string,
+    text: string,
+    sender?: Message["sender"],
+  ) => string;
+  editMessage: (
+    conversationId: string,
+    messageId: string,
+    text: string,
+  ) => void;
   deleteMessage: (conversationId: string, messageId: string) => void;
   updateContact: (conversationId: string, name: string, phone: string) => void;
 };
@@ -19,7 +31,7 @@ const ChatContext = createContext<ChatContextValue | null>(null);
 
 const formatTime = (date: Date) =>
   `${String(date.getHours()).padStart(2, "0")}:${String(
-    date.getMinutes()
+    date.getMinutes(),
   ).padStart(2, "0")}`;
 
 const normalize = (phone: string) => phone.replace(/[\s-]/g, "");
@@ -28,7 +40,7 @@ const normalize = (phone: string) => phone.replace(/[\s-]/g, "");
 const syncPreview = (
   list: Conversation[],
   conversationId: string,
-  msgs: Message[]
+  msgs: Message[],
 ) =>
   list.map((c) => {
     if (c.id !== conversationId) return c;
@@ -43,15 +55,20 @@ const syncPreview = (
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [conversations, setConversations] =
     useState<Conversation[]>(initialConversations);
-  const [messages, setMessages] =
-    useState<Record<string, Message[]>>(messagesByConversation);
+  const [messages, setMessages] = useState<Record<string, Message[]>>(
+    messagesByConversation,
+  );
 
-  const sendMessage = (conversationId: string, text: string) => {
+  const sendMessage = (
+    conversationId: string,
+    text: string,
+    sender: Message["sender"] = "me",
+  ) => {
     const time = formatTime(new Date());
     const message: Message = {
       id: Date.now().toString(),
       text,
-      sender: "me",
+      sender,
       time,
     };
 
@@ -68,12 +85,16 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const startConversation = (phone: string, text: string) => {
+  const startConversation = (
+    phone: string,
+    text: string,
+    sender: Message["sender"] = "me",
+  ) => {
     const existing = conversations.find(
-      (c) => normalize(c.phone) === normalize(phone)
+      (c) => normalize(c.phone) === normalize(phone),
     );
     if (existing) {
-      sendMessage(existing.id, text);
+      sendMessage(existing.id, text, sender);
       return existing.id;
     }
 
@@ -87,7 +108,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     ]);
     setMessages((prev) => ({
       ...prev,
-      [id]: [{ id: "1", text, sender: "me", time }],
+      [id]: [{ id: "1", text, sender, time }],
     }));
     return id;
   };
@@ -95,10 +116,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const editMessage = (
     conversationId: string,
     messageId: string,
-    text: string
+    text: string,
   ) => {
     const updated = (messages[conversationId] ?? []).map((m) =>
-      m.id === messageId ? { ...m, text } : m
+      m.id === messageId ? { ...m, text } : m,
     );
     setMessages((prev) => ({ ...prev, [conversationId]: updated }));
     setConversations((prev) => syncPreview(prev, conversationId, updated));
@@ -106,21 +127,25 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const deleteMessage = (conversationId: string, messageId: string) => {
     const updated = (messages[conversationId] ?? []).filter(
-      (m) => m.id !== messageId
+      (m) => m.id !== messageId,
     );
     setMessages((prev) => ({ ...prev, [conversationId]: updated }));
     setConversations((prev) => syncPreview(prev, conversationId, updated));
   };
 
-  const updateContact = (conversationId: string, name: string, phone: string) => {
+  const updateContact = (
+    conversationId: string,
+    name: string,
+    phone: string,
+  ) => {
     const cleanPhone = phone.trim();
     const cleanName = name.trim() || cleanPhone;
     setConversations((prev) =>
       prev.map((c) =>
         c.id === conversationId
           ? { ...c, name: cleanName, phone: cleanPhone }
-          : c
-      )
+          : c,
+      ),
     );
   };
 
