@@ -1,5 +1,6 @@
 import { Pressable, Text, StyleSheet } from "react-native";
 import { Message } from "../data/message";
+import { formatTime } from "@/utils/date";
 
 type Props = {
   message: Message;
@@ -15,7 +16,9 @@ export default function MessageBubble({ message, onLongPress }: Props) {
       style={[styles.bubble, isMe ? styles.mine : styles.theirs]}
     >
       <Text style={[styles.text, isMe && styles.mineText]}>{message.text}</Text>
-      <Text style={[styles.time, isMe && styles.mineTime]}>{message.time}</Text>
+      <Text style={[styles.time, isMe && styles.mineTime]}>
+        {formatTime(message.timestamp)}
+      </Text>
     </Pressable>
   );
 }

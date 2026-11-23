@@ -1,17 +1,16 @@
-import { useRef, useState } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  Pressable,
-  Alert,
-  StyleSheet,
-} from "react-native";
+import { useMemo, useRef, useState } from "react";
+import { View, Text, FlatList, Pressable, Alert, StyleSheet } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import MessageBubble from "../../components/MessageBubble";
+import DateSeparator from "../../components/DateSeparator";
 import ComposeBar from "../../components/ComposeBar";
-import { Message } from "../../data/message";
+import { Message } from "@/data/message";
 import { useChat } from "../../context/ChatContext";
+import { formatDayLabel, startOfDay } from "../../utils/date";
+
+type ListItem =
+  | { type: "date"; id: string; label: string }
+  | { type: "message"; id: string; message: Message };
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,8 +19,27 @@ export default function ChatScreen() {
     useChat();
   const conversation = conversations.find((c) => c.id === id);
   const chatMessages = messages[id] ?? [];
-  const listRef = useRef<FlatList<Message>>(null);
+  const listRef = useRef<FlatList<ListItem>>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  const items = useMemo<ListItem[]>(() => {
+    const result: ListItem[] = [];
+    let lastDay: number | null = null;
+
+    for (const message of chatMessages) {
+      const day = startOfDay(message.timestamp);
+      if (day !== lastDay) {
+        result.push({
+          type: "date",
+          id: `date-${day}`,
+          label: formatDayLabel(message.timestamp),
+        });
+        lastDay = day;
+      }
+      result.push({ type: "message", id: message.id, message });
+    }
+    return result;
+  }, [chatMessages]);
 
   const editingMessage = chatMessages.find((m) => m.id === editingId);
   const editingText = editingMessage ? editingMessage.text : null;
@@ -76,14 +94,18 @@ export default function ChatScreen() {
       />
       <FlatList
         ref={listRef}
-        data={chatMessages}
+        data={items}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <MessageBubble
-            message={item}
-            onLongPress={() => handleLongPress(item)}
-          />
-        )}
+        renderItem={({ item }) =>
+          item.type === "date" ? (
+            <DateSeparator label={item.label} />
+          ) : (
+            <MessageBubble
+              message={item.message}
+              onLongPress={() => handleLongPress(item.message)}
+            />
+          )
+        }
         contentContainerStyle={styles.list}
         onContentSizeChange={() =>
           listRef.current?.scrollToEnd({ animated: true })

@@ -1,6 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Conversation } from "../data/conversations";
 import { useRouter } from "expo-router";
+import { formatListTime } from "../utils/date";
 
 type Props = {
   conversation: Conversation;
@@ -28,7 +29,9 @@ export default function ConversationItem({ conversation }: Props) {
       <View style={styles.content}>
         <View style={styles.topLine}>
           <Text style={styles.name}>{conversation.name}</Text>
-          <Text style={styles.time}>{conversation.time}</Text>
+          <Text style={styles.time}>
+            {formatListTime(conversation.timestamp)}
+          </Text>
         </View>
         <Text style={styles.preview} numberOfLines={1}>
           {conversation.lastMessage}
