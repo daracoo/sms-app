@@ -11,6 +11,7 @@ type Props = {
   disabled?: boolean;
   editingText?: string | null;
   onCancelEdit?: () => void;
+  lockedSender?: Sender;
 };
 
 export default function ComposeBar({
@@ -18,9 +19,11 @@ export default function ComposeBar({
   disabled = false,
   editingText = null,
   onCancelEdit,
+  lockedSender,
 }: Props) {
   const [text, setText] = useState("");
   const [sender, setSender] = useState<Sender>("me");
+  const activeSender = lockedSender ?? sender;
   const insets = useSafeAreaInsets();
   const keyboardHeight = useKeyboardHeight();
   const isEditing = editingText !== null;
@@ -32,7 +35,7 @@ export default function ComposeBar({
 
   const handleSend = () => {
     if (!canSend) return;
-    onSend(text.trim(), sender);
+    onSend(text.trim(), activeSender);
     setText("");
   };
 
@@ -55,7 +58,7 @@ export default function ComposeBar({
             <Text style={styles.cancel}>Cancel</Text>
           </Pressable>
         </View>
-      ) : (
+      ) : lockedSender ? null : (
         <View style={styles.senderRow}>
           <Text style={styles.senderLabel}>Send as:</Text>
           <Pressable
@@ -93,7 +96,7 @@ export default function ComposeBar({
           value={text}
           onChangeText={setText}
           placeholder={
-            !isEditing && sender === "them"
+            !isEditing && activeSender === "them"
               ? "Message from them"
               : "Text message"
           }
@@ -102,7 +105,7 @@ export default function ComposeBar({
         <Pressable
           style={[
             styles.sendButton,
-            !isEditing && sender === "them" && styles.sendThem,
+            !isEditing && activeSender === "them" && styles.sendThem,
             !canSend && styles.sendDisabled,
           ]}
           onPress={handleSend}

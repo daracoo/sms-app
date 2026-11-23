@@ -7,6 +7,23 @@ export type Message = {
   timestamp: number;
 };
 
+const ticket = (
+  id: string,
+  year: number,
+  month: number, 
+  day: number,
+  hour: number,
+  minute: number
+): Message => {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return {
+    id,
+    sender: "them",
+    text: `Kupivte bilet za edno vozenje so cena od 40 denari na ${pad(day)}.${pad(month)}.${year} ${pad(hour)}:${pad(minute)}`,
+    timestamp: new Date(year, month - 1, day, hour, minute).getTime(),
+  };
+};
+
 export const messagesByConversation: Record<string, Message[]> = {
   "1": [
     { id: "1", text: "Hi sweetheart, how was your day?", sender: "them", timestamp: daysAgo(2, 20, 55) },
@@ -25,5 +42,15 @@ export const messagesByConversation: Record<string, Message[]> = {
   ],
   "4": [
     { id: "1", text: "Your code is 482913", sender: "them", timestamp: new Date(2025, 9, 28, 9, 15).getTime() },
+  ],
+    "5": [
+    ticket("1", 2026, 1, 8, 16, 1),
+    ticket("2", 2026, 1, 9, 7, 45),
+    ticket("3", 2026, 3, 9, 17, 12),
+    ticket("4", 2026, 5, 12, 8, 3),
+    ticket("5", 2026, 6, 12, 16, 40),
+    ticket("6", 2026, 9, 15, 7, 52),
+    ticket("7", 2026, 10, 16, 18, 5),
+    ticket("8", 2026, 11, 20, 8, 10),
   ],
 };

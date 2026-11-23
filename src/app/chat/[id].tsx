@@ -1,5 +1,12 @@
 import { useMemo, useRef, useState } from "react";
-import { View, Text, FlatList, Pressable, Alert, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  Pressable,
+  Alert,
+  StyleSheet,
+} from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import MessageBubble from "../../components/MessageBubble";
 import DateSeparator from "../../components/DateSeparator";
@@ -7,6 +14,7 @@ import ComposeBar from "../../components/ComposeBar";
 import { Message } from "@/data/message";
 import { useChat } from "../../context/ChatContext";
 import { formatDayLabel, startOfDay } from "../../utils/date";
+import RepliesDisabledNotice from "@/components/RepliesDisabledNotice";
 
 type ListItem =
   | { type: "date"; id: string; label: string }
@@ -21,6 +29,9 @@ export default function ChatScreen() {
   const chatMessages = messages[id] ?? [];
   const listRef = useRef<FlatList<ListItem>>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [unlocked, setUnlocked] = useState(false);
+  const repliesDisabled = conversation?.repliesDisabled ?? false;
+  const showNotice = repliesDisabled && !unlocked && editingId === null;
 
   const items = useMemo<ListItem[]>(() => {
     const result: ListItem[] = [];
@@ -111,11 +122,16 @@ export default function ChatScreen() {
           listRef.current?.scrollToEnd({ animated: true })
         }
       />
-      <ComposeBar
-        onSend={handleSend}
-        editingText={editingText}
-        onCancelEdit={() => setEditingId(null)}
-      />
+      {showNotice ? (
+        <RepliesDisabledNotice onUnlock={() => setUnlocked(true)} />
+      ) : (
+        <ComposeBar
+          onSend={handleSend}
+          editingText={editingText}
+          onCancelEdit={() => setEditingId(null)}
+          lockedSender={repliesDisabled ? "them" : undefined}
+        />
+      )}
     </View>
   );
 }
